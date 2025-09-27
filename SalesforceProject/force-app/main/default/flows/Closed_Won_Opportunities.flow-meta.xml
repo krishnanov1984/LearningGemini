@@ -1,6 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>64.0</apiVersion>
+    <actionCalls>
+        <name>Send_Error_Email</name>
+        <label>Send Error Email</label>
+        <locationX>314</locationX>
+        <locationY>539</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <elementReference>ContractCreationErrorEmailBody</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <stringValue>myemail.sfdc@gmail.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>Error Creating Contract for Opportunity</stringValue>
+            </value>
+        </inputParameters>
+    </actionCalls>
     <description>If a high-value opportunity is closed and won, create a draft contract</description>
     <environments>Default</environments>
     <interviewLabel>Closed Won Opportunities {!$Flow.CurrentDateTime}</interviewLabel>
@@ -28,8 +55,11 @@
         <description>Create a draft contract when an opportunity is won and is over 25,000</description>
         <name>Create_Draft_Contract</name>
         <label>Create Draft Contract</label>
-        <locationX>0</locationX>
-        <locationY>0</locationY>
+        <locationX>182</locationX>
+        <locationY>431</locationY>
+        <faultConnector>
+            <targetReference>Send_Error_Email</targetReference>
+        </faultConnector>
         <inputAssignments>
             <field>AccountId</field>
             <value>
@@ -39,14 +69,14 @@
         <inputAssignments>
             <field>Status</field>
             <value>
-                <stringValue>Draft</stringValue>
+                <stringValue>Draft</stringValue>.
             </value>
         </inputAssignments>
         <object>Contract</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
     <start>
-        <locationX>0</locationX>
+        <locationX>56</locationX>
         <locationY>0</locationY>
         <connector>
             <targetReference>Create_Draft_Contract</targetReference>
@@ -72,4 +102,11 @@
         <triggerType>RecordAfterSave</triggerType>
     </start>
     <status>Active</status>
+    <textTemplates>
+        <name>ContractCreationErrorEmailBody</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>An error occurred while creating a contract for Opportunity ID: {!$Record.Id}.
+
+Error Message: {!$Flow.FaultMessage}</text>
+    </textTemplates>
 </Flow>
